@@ -116,16 +116,43 @@ const Tenants = () => {
 
   const handleFormSubmit = async (formData: Partial<Tenant>) => {
     try {
+      // Validate required fields
+      if (!formData.address || !formData.email || !formData.phone || !formData.type) {
+        throw new Error("Required fields are missing");
+      }
+      
+      // Ensure the type value matches expected "individual" | "company" union
+      if (formData.type !== "individual" && formData.type !== "company") {
+        throw new Error("Invalid tenant type");
+      }
+      
+      // Create a properly typed tenant object
+      const tenantData = {
+        address: formData.address,
+        email: formData.email,
+        phone: formData.phone,
+        type: formData.type as "individual" | "company",
+        title: formData.title,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        company_name: formData.company_name,
+        display_name: formData.display_name,
+        id_number: formData.id_number,
+        residence_id: formData.residence_id,
+        apartment_id: formData.apartment_id,
+        lease_start: formData.lease_start,
+        lease_end: formData.lease_end,
+        lease_duration: formData.lease_duration,
+        duration_type: formData.duration_type,
+        diplomatic_clause: formData.diplomatic_clause,
+        portal_language: formData.portal_language,
+      };
+      
       if (editingTenant) {
-        // Ensure required fields are present for update
-        if (!formData.address || !formData.email || !formData.phone || !formData.type) {
-          throw new Error("Required fields are missing");
-        }
-        
         // Update existing tenant
         const { data, error } = await supabase
           .from("tenants")
-          .update(formData)
+          .update(tenantData)
           .eq("id", editingTenant.id)
           .select();
         
@@ -137,15 +164,10 @@ const Tenants = () => {
           description: "The tenant information has been updated successfully.",
         });
       } else {
-        // Ensure required fields are present for creation
-        if (!formData.address || !formData.email || !formData.phone || !formData.type) {
-          throw new Error("Required fields are missing");
-        }
-        
         // Create new tenant
         const { data, error } = await supabase
           .from("tenants")
-          .insert(formData)
+          .insert(tenantData)
           .select();
         
         if (error) throw error;
