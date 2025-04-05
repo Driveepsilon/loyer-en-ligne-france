@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import Residences from "./pages/Residences";
+import Tenants from "./pages/Tenants";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,10 +22,10 @@ const App = () => (
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/residences" element={<Residences />} />
+            <Route path="/tenants" element={<Tenants />} />
             {/* Pages à implémenter ultérieurement */}
             <Route path="/apartments" element={<NotFound />} />
             <Route path="/owners" element={<NotFound />} />
-            <Route path="/tenants" element={<NotFound />} />
             <Route path="/leases" element={<NotFound />} />
             <Route path="/signatures" element={<NotFound />} />
             <Route path="/rent" element={<NotFound />} />
