@@ -46,7 +46,8 @@ const Tenants = () => {
         .select("*");
       
       if (tenantsError) throw tenantsError;
-      setTenants(tenantsData || []);
+      // Cast to ensure type compatibility
+      setTenants((tenantsData || []) as Tenant[]);
 
       // Fetch residences
       const { data: residencesData, error: residencesError } = await supabase
@@ -54,7 +55,13 @@ const Tenants = () => {
         .select("*");
       
       if (residencesError) throw residencesError;
-      setResidences(residencesData || []);
+      // Transform the services and apartment_types from JSON to string arrays
+      const formattedResidences = (residencesData || []).map(residence => ({
+        ...residence,
+        services: Array.isArray(residence.services) ? residence.services : [],
+        apartment_types: Array.isArray(residence.apartment_types) ? residence.apartment_types : []
+      }));
+      setResidences(formattedResidences as Residence[]);
 
       // Fetch apartments
       const { data: apartmentsData, error: apartmentsError } = await supabase
@@ -62,7 +69,7 @@ const Tenants = () => {
         .select("*");
       
       if (apartmentsError) throw apartmentsError;
-      setApartments(apartmentsData || []);
+      setApartments((apartmentsData || []) as Apartment[]);
 
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -110,6 +117,11 @@ const Tenants = () => {
   const handleFormSubmit = async (formData: Partial<Tenant>) => {
     try {
       if (editingTenant) {
+        // Ensure required fields are present for update
+        if (!formData.address || !formData.email || !formData.phone || !formData.type) {
+          throw new Error("Required fields are missing");
+        }
+        
         // Update existing tenant
         const { data, error } = await supabase
           .from("tenants")
@@ -119,12 +131,17 @@ const Tenants = () => {
         
         if (error) throw error;
         
-        setTenants(tenants.map(t => t.id === editingTenant.id ? data[0] : t));
+        setTenants(tenants.map(t => t.id === editingTenant.id ? (data[0] as Tenant) : t));
         toast({
           title: "Tenant updated",
           description: "The tenant information has been updated successfully.",
         });
       } else {
+        // Ensure required fields are present for creation
+        if (!formData.address || !formData.email || !formData.phone || !formData.type) {
+          throw new Error("Required fields are missing");
+        }
+        
         // Create new tenant
         const { data, error } = await supabase
           .from("tenants")
@@ -133,7 +150,7 @@ const Tenants = () => {
         
         if (error) throw error;
         
-        setTenants([...tenants, data[0]]);
+        setTenants([...tenants, (data[0] as Tenant)]);
         toast({
           title: "Tenant created",
           description: "The new tenant has been created successfully.",
